@@ -1,6 +1,6 @@
 import gotgame
 import event_handlers
-from gotgame import PathFollower
+from gotgame import ScriptPhase
 
 game = gotgame.Game(800, 600)
 
@@ -15,8 +15,12 @@ def plus_mover(dx, dy):
 
 
 def path_generator(sprite):
-    yield PathFollower(sprite, plus_mover(1,1), 1000)
-    yield PathFollower(sprite, plus_mover(-1,-1), 1000)
+    # spin forever through phases
+    while True:
+        yield ScriptPhase(sprite, plus_mover(1,1), 1000)
+        # no script function is just sleeper
+        yield ScriptPhase(sprite, None, 200)
+        yield ScriptPhase(sprite, plus_mover(-1,-1), 1000)
 
 
 for i in range(10, 20):

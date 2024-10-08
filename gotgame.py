@@ -4,7 +4,7 @@ _event_map: dict = {}
 _updaters_list = []
 _collide_handlers = []
 
-class PathFollower:
+class ScriptPhase:
     def __init__(self, sprite: pygame.sprite.Sprite, path_function, time_ms: int):
         self.path_function = path_function
         self.sprite = sprite
@@ -14,11 +14,12 @@ class PathFollower:
 
     def tick(self) -> bool:
         """ when either pathfunct returns True or the time has passed, return True to end path"""
-        f_ret = self.path_function(self.sprite)
-        if f_ret:
-            return True
         if pygame.time.get_ticks() > self.last_time:
             return True
+        if self.path_function:
+            f_ret = self.path_function(self.sprite)
+            if f_ret:
+                return True
         return False
 
 

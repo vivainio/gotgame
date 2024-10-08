@@ -4,15 +4,39 @@ _event_map: dict = {}
 _updaters_list = []
 _collide_handlers = []
 
+class PathFollower:
+    def __init__(self, sprite: pygame.sprite.Sprite, path_function, time_ms: int):
+        self.path_function = path_function
+        self.sprite = sprite
+        self.last_time = pygame.time.get_ticks() + time_ms
+    
+    # return true if the time has passed
+
+    def tick(self) -> bool:
+        """ when either pathfunct returns True or the time has passed, return True to end path"""
+        f_ret = self.path_function(self.sprite)
+        if f_ret:
+            return True
+        if pygame.time.get_ticks() > self.last_time:
+            return True
+        return False
+
+
 class SimpleSprite(pygame.sprite.Sprite):
     def __init__(self, image, pos):
         super().__init__()
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.center = pos
+        self.path = None        
+        self._current_follower = None
 
     def update(self):
-        pass
+        # initialize generator
+        if self.path and not self._current_follower:
+            self._current_follower = next(self.path, None)
+        if self._current_follower and self._current_follower.tick():
+            self._current_follower = next(self.path, None)
 
 @cache
 def _get_font(size: int):
@@ -25,6 +49,7 @@ _game = None
 
 def game():
     return _game
+
 
 class Game:
     # use this to read the keys
@@ -72,6 +97,9 @@ class Game:
             self.mousepos = pygame.mouse.get_pos()
             for updater in _updaters_list:
                 updater()
+            self.sprites.update()
+            self.player.update()
+
             self.screen.fill(self.bgcolor)
             self.sprites.draw(self.screen)
             if self.player:
